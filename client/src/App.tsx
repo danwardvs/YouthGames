@@ -11,11 +11,17 @@ class App extends React.Component {
     messages: [
       {
         message: 'Welcome! Type a message and press Send Message to continue the chat.',
-        author: 'Bot'
+        author: "Danny's Youth Game Server Bot"
       }
     ],
-    input: ''
+    input: '',
+    author: 'newUser',
+    started:2
+    
   }
+
+  
+
 
   componentDidMount () {
 
@@ -44,18 +50,38 @@ class App extends React.Component {
 
     const handleMessage = (): void => {
 
-      const author: string = 'Ross';
+   
 
       if (this.state.input !== '') {
         this.context.send({
           message: this.state.input,
-          author: author
+          author: this.state.author
         });
         this.setState({ input: '' });
+        
+        
+        
+      }
+    };
+
+    const handleName = (): void => {
+
+      
+
+      if (this.state.input !== '') {
+        this.context.send({
+          message: "has arrived!",
+          author: this.state.input
+        });
+        this.setState({ input: '' });
+        this.setState({started:1})
+        this.setState({author:this.state.input})
+
       }
     };
 
     let msgIndex = 0;
+    if(this.state.started===2){
     return (
       <div className="App">
         <img src={logo} className="App-logo" alt="logo" />
@@ -86,7 +112,44 @@ class App extends React.Component {
         </p>
       </div>
     );
+  }else if(this.state.started===0){
+    return(
+      <div className="App">
+        Hello welcome to die
+        <input
+          className="App-Textarea"
+          placeholder="Please enter your name!"
+          onChange={updateInput}
+          value={this.state.input}
+        />
+        <p>
+          <button onClick={() => { handleName() }}>
+            Enter Name
+          </button>
+        </p>
+      </div>
+    )
+  }else if(this.state.started===1){
+    return(
+    <div className="App">
+    <img src={logo} className="App-logo" alt="logo" />
+
+    <div className="App-chatbox">
+      {this.state.messages.map((msg: ChatMessage) => {
+        msgIndex++;
+        return (
+          <div key={msgIndex}>
+            <p>{msg.author}</p>
+            <p>
+              {msg.message}
+            </p>
+          </div>
+        );
+      })}
+    </div>
+    </div>)
   }
+}
 }
 
 export default App;

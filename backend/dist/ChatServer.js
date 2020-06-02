@@ -9,6 +9,7 @@ var cors = require('cors');
 let ChatServer = /** @class */ (() => {
     class ChatServer {
         constructor() {
+            this.users = [];
             this._app = express();
             this.port = process.env.PORT || ChatServer.PORT;
             this._app.use(cors());
@@ -28,7 +29,14 @@ let ChatServer = /** @class */ (() => {
                 console.log('Connected client on port %s.', this.port);
                 socket.on(constants_1.ChatEvent.MESSAGE, (m) => {
                     console.log('[server](message): %s', JSON.stringify(m));
-                    this.io.emit('message', m);
+                    //this.io.emit('message', m);
+                    if (m.message) {
+                        if (m.message === "has arrived!") {
+                            this.users.push(m.author);
+                            console.log("CURRENT USERS");
+                            console.log(this.users);
+                        }
+                    }
                 });
                 socket.on(constants_1.ChatEvent.DISCONNECT, () => {
                     console.log('Client disconnected');

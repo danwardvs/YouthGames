@@ -5,5 +5,8 @@ export interface ChatMessage {
 
 export interface ChatState {
   input: string;
+  author: string;
   messages: ChatMessage[];
+  started:number;
+
 }

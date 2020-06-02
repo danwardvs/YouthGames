@@ -11,6 +11,7 @@ export class ChatServer {
   private server: Server;
   private io: SocketIO.Server;
   private port: string | number;
+  private users: string[] = [];
 
   constructor () {
     this._app = express();
@@ -37,6 +38,15 @@ export class ChatServer {
       socket.on(ChatEvent.MESSAGE, (m: ChatMessage) => {
         console.log('[server](message): %s', JSON.stringify(m));
         this.io.emit('message', m);
+       
+        if(m.message){
+          if(m.message === "has arrived!"){
+            this.users.push(m.author);
+            console.log("CURRENT USERS");
+            console.log(this.users);
+          }
+        }
+        
       });
 
       socket.on(ChatEvent.DISCONNECT, () => {
