@@ -5,41 +5,68 @@ const express = require("express");
 const socketIo = require("socket.io");
 const constants_1 = require("./constants");
 const http_1 = require("http");
-var cors = require('cors');
+const WriteLog_1 = require("./WriteLog");
+var cors = require("cors");
 let ChatServer = /** @class */ (() => {
     class ChatServer {
         constructor() {
             this.users = [];
+            this.boundInputListener = this.inputListener.bind(this);
             this._app = express();
             this.port = process.env.PORT || ChatServer.PORT;
             this._app.use(cors());
-            this._app.options('*', cors());
+            this._app.options("*", cors());
             this.server = http_1.createServer(this._app);
             this.initSocket();
             this.listen();
+        }
+        inputListener(d) {
+            const input = d.toString().trim();
+            if (input.startsWith("message ")) {
+                const messageBody = input.substring(7, input.length);
+                WriteLog_1.WriteLog.log("Sending message: " + messageBody, this.users);
+                this.io.emit("message", {
+                    author: "Director",
+                    message: messageBody
+                });
+            }
+            else if (input === "start") {
+                WriteLog_1.WriteLog.log("Director: Game started", this.users);
+                this.io.emit("message", {
+                    author: "Director",
+                    message: "Starting the game!"
+                });
+            }
+            else {
+                WriteLog_1.WriteLog.log("Invalid command: " + input, this.users);
+            }
+        }
+        listenCommand() {
+            var stdin = process.openStdin();
+            stdin.addListener("data", this.boundInputListener);
         }
         initSocket() {
             this.io = socketIo(this.server);
         }
         listen() {
+            this.listenCommand();
             this.server.listen(this.port, () => {
-                console.log('Running server on port %s', this.port);
+                WriteLog_1.WriteLog.log("Server: Running on port " + String(this.port), this.users);
             });
             this.io.on(constants_1.ChatEvent.CONNECT, (socket) => {
-                console.log('Connected client on port %s.', this.port);
+                //console.log('Connected client on port %s.', this.port);
                 socket.on(constants_1.ChatEvent.MESSAGE, (m) => {
-                    console.log('[server](message): %s', JSON.stringify(m));
-                    //this.io.emit('message', m);
+                    //console.log('[server](message): %s', JSON.stringify(m));
+                    this.io.emit("message", m);
                     if (m.message) {
                         if (m.message === "has arrived!") {
                             this.users.push(m.author);
-                            console.log("CURRENT USERS");
-                            console.log(this.users);
+                            WriteLog_1.WriteLog.updateUsers(this.users, m.author);
                         }
                     }
                 });
                 socket.on(constants_1.ChatEvent.DISCONNECT, () => {
-                    console.log('Client disconnected');
+                    //console.log('Client disconnected');
                 });
             });
         }
