@@ -14,6 +14,7 @@ export class ChatServer {
   private io: SocketIO.Server;
   private port: string | number;
   private users: string[] = [];
+  private submissions: [] = [];
 
   constructor() {
     this._app = express();
@@ -66,12 +67,17 @@ export class ChatServer {
 
       socket.on(ChatEvent.MESSAGE, (m: ChatMessage) => {
         //console.log('[server](message): %s', JSON.stringify(m));
-        this.io.emit("message", m);
 
         if (m.message) {
           if (m.message === "has arrived!") {
             this.users.push(m.author);
             WriteLog.updateUsers(this.users, m.author);
+            this.io.emit("message", m);
+          } else if (m.message.startsWith("**")) {
+            this.io.emit("message", {
+              author: m.author,
+              message: "has submitted their answer..."
+            });
           }
         }
       });

@@ -11,6 +11,7 @@ let ChatServer = /** @class */ (() => {
     class ChatServer {
         constructor() {
             this.users = [];
+            this.submissions = [];
             this.boundInputListener = this.inputListener.bind(this);
             this._app = express();
             this.port = process.env.PORT || ChatServer.PORT;
@@ -57,11 +58,17 @@ let ChatServer = /** @class */ (() => {
                 //console.log('Connected client on port %s.', this.port);
                 socket.on(constants_1.ChatEvent.MESSAGE, (m) => {
                     //console.log('[server](message): %s', JSON.stringify(m));
-                    this.io.emit("message", m);
                     if (m.message) {
                         if (m.message === "has arrived!") {
                             this.users.push(m.author);
                             WriteLog_1.WriteLog.updateUsers(this.users, m.author);
+                            this.io.emit("message", m);
+                        }
+                        else if (m.message.startsWith("**")) {
+                            this.io.emit("message", {
+                                author: m.author,
+                                message: "has submitted their answer..."
+                            });
                         }
                     }
                 });

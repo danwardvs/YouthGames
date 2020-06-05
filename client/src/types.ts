@@ -4,9 +4,12 @@ export interface ChatMessage {
 }
 
 export interface ChatState {
-  input: string;
+  truth_1: string;
+  truth_2: string;
+  lie: string;
+  nameInput: string;
   author: string;
   messages: ChatMessage[];
-  started:number;
-
+  started: number;
+  submittedAnswer: boolean;
 }
