@@ -20,7 +20,7 @@ class App extends React.Component {
     truth_2: "",
     lie: "",
     author: "newUser",
-    started: 0,
+    gameState: 0,
     submittedAnswer: false
   };
 
@@ -36,7 +36,8 @@ class App extends React.Component {
       messages.push(m);
       this.setState({ messages: messages });
       if (m.author === "Director") {
-        if (m.message === "Starting the game!") this.setState({ started: 2 });
+        if (m.message === "Starting the game!") this.setState({ gameState: 2 });
+        if (m.message === "Moving to answers.") this.setState({ gameState: 3 });
       }
     });
   }
@@ -91,13 +92,13 @@ class App extends React.Component {
           author: this.state.nameInput
         });
         this.setState({ input: "" });
-        this.setState({ started: 1 });
+        this.setState({ gameState: 1 });
         this.setState({ author: this.state.nameInput });
       }
     };
 
     let msgIndex = 0;
-    if (this.state.started === 2) {
+    if (this.state.gameState === 2) {
       return (
         <div className="App">
           <ScrollToBottom className="App-chatbox">
@@ -149,7 +150,7 @@ class App extends React.Component {
           )}
         </div>
       );
-    } else if (this.state.started === 0) {
+    } else if (this.state.gameState === 0) {
       return (
         <div className="App">
           Welcome to Danny's (probably broken) online youth games.
@@ -170,7 +171,25 @@ class App extends React.Component {
           </p>
         </div>
       );
-    } else if (this.state.started === 1) {
+    } else if (this.state.gameState === 3) {
+      return (
+        <div className="App">
+          Time for your guesses!
+          <p>
+            <div className="App-answer" onClick={() => console.log("bum")}>
+              <button>This is the first guess</button>
+            </div>
+            <div className="App-answer">
+              <button>This is the next guess</button>
+            </div>
+
+            <div className="App-answer">
+              <button>This is the third guess; might be a lie</button>
+            </div>
+          </p>
+        </div>
+      );
+    } else if (this.state.gameState === 1) {
       return (
         <div className="App">
           <img src={logo} className="App-logo" alt="logo" />

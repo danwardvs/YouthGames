@@ -5,6 +5,13 @@ import { ChatMessage } from "./types";
 import { createServer, Server } from "http";
 import { WriteLog } from "./WriteLog";
 
+interface Submission {
+  author: string;
+  truth_1: string;
+  truth_2: string;
+  lie: string;
+}
+
 var cors = require("cors");
 
 export class ChatServer {
@@ -14,7 +21,7 @@ export class ChatServer {
   private io: SocketIO.Server;
   private port: string | number;
   private users: string[] = [];
-  private submissions: [] = [];
+  private submissions: Submission[] = [];
 
   constructor() {
     this._app = express();
@@ -41,6 +48,13 @@ export class ChatServer {
         author: "Director",
         message: "Starting the game!"
       });
+    } else if (input === "answer") {
+      WriteLog.log("Director: Start answer portion", this.users);
+      this.io.emit("message", {
+        author: "Director",
+        message: "Moving to answers."
+      });
+    } else if (input === "results") {
     } else {
       WriteLog.log("Invalid command: " + input, this.users);
     }
@@ -77,6 +91,14 @@ export class ChatServer {
             this.io.emit("message", {
               author: m.author,
               message: "has submitted their answer..."
+            });
+            const trimmedMessage = m.message.substring(1, m.message.length);
+            const answers = trimmedMessage.split("|");
+            this.submissions.push({
+              author: m.author,
+              truth_1: answers[0],
+              truth_2: answers[1],
+              lie: answers[2]
             });
           }
         }

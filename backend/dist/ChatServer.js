@@ -38,6 +38,13 @@ let ChatServer = /** @class */ (() => {
                     message: "Starting the game!"
                 });
             }
+            else if (input === "answer") {
+                WriteLog_1.WriteLog.log("Director: Start answer portion", this.users);
+                this.io.emit("message", {
+                    author: "Director",
+                    message: "Moving to answers."
+                });
+            }
             else {
                 WriteLog_1.WriteLog.log("Invalid command: " + input, this.users);
             }
@@ -68,6 +75,14 @@ let ChatServer = /** @class */ (() => {
                             this.io.emit("message", {
                                 author: m.author,
                                 message: "has submitted their answer..."
+                            });
+                            const trimmedMessage = m.message.substring(1, m.message.length);
+                            const answers = trimmedMessage.split("|");
+                            this.submissions.push({
+                                author: m.author,
+                                truth_1: answers[0],
+                                truth_2: answers[1],
+                                lie: answers[2]
                             });
                         }
                     }

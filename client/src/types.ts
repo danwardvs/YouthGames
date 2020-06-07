@@ -10,6 +10,6 @@ export interface ChatState {
   nameInput: string;
   author: string;
   messages: ChatMessage[];
-  started: number;
+  gameState: number;
   submittedAnswer: boolean;
 }
