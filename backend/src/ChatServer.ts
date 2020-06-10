@@ -22,6 +22,8 @@ export class ChatServer {
   private port: string | number;
   private users: string[] = [];
   private submissions: Submission[] = [];
+  private submissionIndex: number;
+  private correctAnswer: string;
 
   constructor() {
     this._app = express();
@@ -31,6 +33,42 @@ export class ChatServer {
     this.server = createServer(this._app);
     this.initSocket();
     this.listen();
+  }
+  private shuffle(array: string[]) {
+    var currentIndex = array.length,
+      temporaryValue,
+      randomIndex;
+
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
+      // Pick a remaining element...
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1;
+
+      // And swap it with the current element.
+      temporaryValue = array[currentIndex];
+      array[currentIndex] = array[randomIndex];
+      array[randomIndex] = temporaryValue;
+    }
+
+    return array;
+  }
+
+  private generateQuestion() {
+    const currentSub = this.submissions[this.submissionIndex];
+    let answers = [currentSub.truth_1, currentSub.truth_2, currentSub.lie];
+    this.shuffle(answers);
+    this.correctAnswer = ">>" + currentSub.lie;
+    const message =
+      "<<" +
+      currentSub.author +
+      "<<" +
+      answers[0] +
+      "<<" +
+      answers[1] +
+      "<<" +
+      answers[2];
+    this.io.emit("message", { author: "Director", message: message });
   }
 
   private inputListener(d: any) {
@@ -50,11 +88,19 @@ export class ChatServer {
       });
     } else if (input === "answer") {
       WriteLog.log("Director: Start answer portion", this.users);
+      this.submissionIndex = 0;
       this.io.emit("message", {
         author: "Director",
-        message: "Moving to answers."
+        message: "Moving to the first question. Get ready!"
       });
-    } else if (input === "results") {
+    } else if (input === "next") {
+      if (this.submissionIndex < this.submissions.length) {
+        this.generateQuestion();
+        WriteLog.log("Director: Asking users for a question.", this.users);
+        this.submissionIndex++;
+      } else {
+        WriteLog.log("Error: No more submissions.", this.users);
+      }
     } else {
       WriteLog.log("Invalid command: " + input, this.users);
     }
@@ -92,7 +138,7 @@ export class ChatServer {
               author: m.author,
               message: "has submitted their answer..."
             });
-            const trimmedMessage = m.message.substring(1, m.message.length);
+            const trimmedMessage = m.message.substring(2, m.message.length);
             const answers = trimmedMessage.split("|");
             this.submissions.push({
               author: m.author,
