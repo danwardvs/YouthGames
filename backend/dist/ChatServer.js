@@ -54,7 +54,7 @@ let ChatServer = /** @class */ (() => {
             const input = d.toString().trim();
             if (input.startsWith("message ")) {
                 const messageBody = input.substring(7, input.length);
-                WriteLog_1.WriteLog.log("Sending message: " + messageBody, this.users);
+                WriteLog_1.WriteLog.log("Director: Sending message: " + messageBody, this.users);
                 this.io.emit("message", {
                     author: "Director",
                     message: messageBody
@@ -78,12 +78,26 @@ let ChatServer = /** @class */ (() => {
             else if (input === "next") {
                 if (this.submissionIndex < this.submissions.length) {
                     this.generateQuestion();
-                    WriteLog_1.WriteLog.log(this.submissions.length + "," + this.submissionIndex, this.users);
+                    WriteLog_1.WriteLog.log("Director: Asking users for a question.", this.users);
                     this.submissionIndex++;
                 }
                 else {
                     WriteLog_1.WriteLog.log("Error: No more submissions.", this.users);
                 }
+            }
+            else if (input === "restart") {
+                this.users = [];
+                this.submissions = [];
+                this.submissionIndex = 0;
+                this.correctAnswer = "";
+                WriteLog_1.WriteLog.log("Server: Restarting server", this.users);
+                this.io.emit("message", {
+                    author: "Director",
+                    message: "Restarting the game!"
+                });
+            }
+            else if (input === "help") {
+                WriteLog_1.WriteLog.help();
             }
             else {
                 WriteLog_1.WriteLog.log("Invalid command: " + input, this.users);
@@ -107,14 +121,14 @@ let ChatServer = /** @class */ (() => {
                     //console.log('[server](message): %s', JSON.stringify(m));
                     if (m.message) {
                         if (m.message === "has arrived!") {
-                            this.users.push(m.author);
+                            this.users.push({ name: m.author, score: 0 });
                             WriteLog_1.WriteLog.updateUsers(this.users, m.author);
                             this.io.emit("message", m);
                         }
                         else if (m.message.startsWith("**")) {
                             this.io.emit("message", {
                                 author: m.author,
-                                message: "has submitted their answer..."
+                                message: "has submitted their truth/lies..."
                             });
                             const trimmedMessage = m.message.substring(2, m.message.length);
                             const answers = trimmedMessage.split("|");
@@ -124,6 +138,16 @@ let ChatServer = /** @class */ (() => {
                                 truth_2: answers[1],
                                 lie: answers[2]
                             });
+                        }
+                        else if (m.message.startsWith("##")) {
+                            this.io.emit("message", {
+                                author: m.author,
+                                message: "has submitted their truth/lies..."
+                            });
+                            if (m.message.substring(2, m.message.length) === this.correctAnswer) {
+                                this.users = this.users.map((elem) => elem.name === m.author ? Object.assign(Object.assign({}, elem), { score: elem.score++ }) : elem);
+                                this.correctUsers.push(m.author);
+                            }
                         }
                     }
                 });

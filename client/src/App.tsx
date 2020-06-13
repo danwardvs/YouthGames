@@ -56,10 +56,15 @@ class App extends React.Component {
 
     observable.subscribe((m: ChatMessage) => {
       let messages = this.state.messages;
-      let push = true;
       this.setState({ messages: messages });
+
+      let push = true;
       if (m.author === "Director") {
         if (m.message === "Starting the game!") this.setState({ gameState: 2 });
+        if (m.message === "Restarting the game!") {
+          this.setState({ messages: [] });
+          this.setState({ gameState: 0 });
+        }
         if (m.message === "Moving to the first question. Get ready!")
           this.setState({ gameState: 3 });
         if (m.message.startsWith("<<")) {
@@ -67,8 +72,10 @@ class App extends React.Component {
           this.setState({ gameState: 4 });
           this.setAnswers(m);
         }
-        if (push) messages.push(m);
       }
+      if (push) messages.push(m);
+
+      this.setState({ messages: messages });
     });
   }
 
@@ -111,8 +118,12 @@ class App extends React.Component {
         });
       }
     };
-    const handleChoiceSubmit = () => {
+    const handleChoiceSubmit = (choice: string) => {
       this.setState({ gameState: 5 });
+      this.context.send({
+        author: this.state.author,
+        message: choice
+      });
     };
 
     const handleName = (): void => {
@@ -246,14 +257,23 @@ class App extends React.Component {
           These two truths and one lie are brought to you by:{" "}
           {this.state.answerAuthor}
           <p>
-            <div className="App-button" onClick={() => handleChoiceSubmit()}>
+            <div
+              className="App-button"
+              onClick={() => handleChoiceSubmit(this.state.answers[0])}
+            >
               <button>{this.state.answers[0]}</button>
             </div>
-            <div className="App-button" onClick={() => handleChoiceSubmit()}>
+            <div
+              className="App-button"
+              onClick={() => handleChoiceSubmit(this.state.answers[1])}
+            >
               <button>{this.state.answers[1]}</button>
             </div>
 
-            <div className="App-button" onClick={() => handleChoiceSubmit()}>
+            <div
+              className="App-button"
+              onClick={() => handleChoiceSubmit(this.state.answers[2])}
+            >
               <button>{this.state.answers[2]}</button>
             </div>
           </p>

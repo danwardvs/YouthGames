@@ -12,6 +12,11 @@ interface Submission {
   lie: string;
 }
 
+interface User {
+  name: string;
+  score: number;
+}
+
 var cors = require("cors");
 
 export class ChatServer {
@@ -20,10 +25,11 @@ export class ChatServer {
   private server: Server;
   private io: SocketIO.Server;
   private port: string | number;
-  private users: string[] = [];
+  private users: User[] = [];
   private submissions: Submission[] = [];
   private submissionIndex: number;
   private correctAnswer: string;
+  private correctUsers: string[];
 
   constructor() {
     this._app = express();
@@ -75,7 +81,7 @@ export class ChatServer {
     const input = d.toString().trim();
     if (input.startsWith("message ")) {
       const messageBody = input.substring(7, input.length);
-      WriteLog.log("Sending message: " + messageBody, this.users);
+      WriteLog.log("Director: Sending message: " + messageBody, this.users);
       this.io.emit("message", {
         author: "Director",
         message: messageBody
@@ -101,6 +107,18 @@ export class ChatServer {
       } else {
         WriteLog.log("Error: No more submissions.", this.users);
       }
+    } else if (input === "restart") {
+      this.users = [];
+      this.submissions = [];
+      this.submissionIndex = 0;
+      this.correctAnswer = "";
+      WriteLog.log("Server: Restarting server", this.users);
+      this.io.emit("message", {
+        author: "Director",
+        message: "Restarting the game!"
+      });
+    } else if (input === "help") {
+      WriteLog.help();
     } else {
       WriteLog.log("Invalid command: " + input, this.users);
     }
@@ -130,13 +148,13 @@ export class ChatServer {
 
         if (m.message) {
           if (m.message === "has arrived!") {
-            this.users.push(m.author);
+            this.users.push({ name: m.author, score: 0 });
             WriteLog.updateUsers(this.users, m.author);
             this.io.emit("message", m);
           } else if (m.message.startsWith("**")) {
             this.io.emit("message", {
               author: m.author,
-              message: "has submitted their answer..."
+              message: "has submitted their truth/lies..."
             });
             const trimmedMessage = m.message.substring(2, m.message.length);
             const answers = trimmedMessage.split("|");
@@ -146,6 +164,19 @@ export class ChatServer {
               truth_2: answers[1],
               lie: answers[2]
             });
+          } else if (m.message.startsWith("##")) {
+            this.io.emit("message", {
+              author: m.author,
+              message: "has submitted their truth/lies..."
+            });
+            if (
+              m.message.substring(2, m.message.length) === this.correctAnswer
+            ) {
+              this.users = this.users.map((elem) =>
+                elem.name === m.author ? { ...elem, score: elem.score++ } : elem
+              );
+              this.correctUsers.push(m.author);
+            }
           }
         }
       });
