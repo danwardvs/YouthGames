@@ -5,9 +5,24 @@ import { ChatMessage, ChatState } from "./types";
 import { ChatContext } from "./ChatContext";
 import ScrollToBottom from "react-scroll-to-bottom";
 
+// ** submitting user's truths and lies
+// << receiving users truths and lies to guess
+// ## submitting guess
+// ^^ recieve stats
+
+interface user {
+  author: string;
+  score: number;
+}
+
 class App extends React.Component {
   static contextType = ChatContext;
-
+  test = [
+    { author: "Allan", score: 321 },
+    { author: "Danny", score: 999 },
+    { author: "Zllan", score: 1 },
+    { author: "An", score: 21 }
+  ];
   state: ChatState = {
     messages: [
       {
@@ -19,6 +34,7 @@ class App extends React.Component {
     answerAuthor: "",
     answers: ["", "", ""],
     author: "newUser",
+    results: [],
     gameState: 0,
     submittedAnswer: false
   };
@@ -62,7 +78,15 @@ class App extends React.Component {
       if (m.author === "Director") {
         if (m.message === "Starting the game!") this.setState({ gameState: 2 });
         if (m.message === "Restarting the game!") {
-          this.setState({ messages: [] });
+          this.setState({
+            messages: [],
+            answerAuthor: "",
+            answers: ["", "", ""],
+            author: "newUser",
+            results: [],
+            gameState: 0,
+            submittedAnswer: false
+          });
           this.setState({ gameState: 0 });
         }
         if (m.message === "Moving to the first question. Get ready!")
@@ -71,6 +95,20 @@ class App extends React.Component {
           push = false;
           this.setState({ gameState: 4 });
           this.setAnswers(m);
+        }
+        if (m.message.startsWith("^^")) {
+          this.setState({ gameState: 6 });
+          const finalResults: user[] = [];
+          const newResults = m.message.substring(2).split("|");
+          newResults.forEach((elem) => {
+            if (elem) {
+              const val = elem.split("$");
+              const user = { author: val[0], score: parseInt(val[1]) };
+              finalResults.push(user);
+            }
+          });
+          this.setState({ results: finalResults });
+          push = false;
         }
       }
       if (push) messages.push(m);
@@ -122,7 +160,7 @@ class App extends React.Component {
       this.setState({ gameState: 5 });
       this.context.send({
         author: this.state.author,
-        message: choice
+        message: "##" + choice
       });
     };
 
@@ -233,6 +271,19 @@ class App extends React.Component {
           </ScrollToBottom>
         </div>
       );
+    } else if (this.state.gameState === 6) {
+      return (
+        <div className="App">
+          Here's the results!
+          {this.state.results
+            .sort(function (a, b) {
+              return b.score - a.score;
+            })
+            .map((elem) => {
+              return <div>{elem.author + ": " + elem.score}</div>;
+            })}
+        </div>
+      );
     } else if (this.state.gameState === 3) {
       return (
         <div className="App">
@@ -252,33 +303,52 @@ class App extends React.Component {
         </div>
       );
     } else if (this.state.gameState === 4) {
-      return (
-        <div className="App">
-          These two truths and one lie are brought to you by:{" "}
-          {this.state.answerAuthor}
-          <p>
-            <div
-              className="App-button"
-              onClick={() => handleChoiceSubmit(this.state.answers[0])}
-            >
-              <button>{this.state.answers[0]}</button>
-            </div>
-            <div
-              className="App-button"
-              onClick={() => handleChoiceSubmit(this.state.answers[1])}
-            >
-              <button>{this.state.answers[1]}</button>
-            </div>
+      if (this.state.answerAuthor !== this.state.author)
+        return (
+          <div className="App">
+            These two truths and one lie are brought to you by:{" "}
+            {this.state.answerAuthor}
+            <p>
+              <div
+                className="App-button"
+                onClick={() => handleChoiceSubmit(this.state.answers[0])}
+              >
+                <button>{this.state.answers[0]}</button>
+              </div>
+              <div
+                className="App-button"
+                onClick={() => handleChoiceSubmit(this.state.answers[1])}
+              >
+                <button>{this.state.answers[1]}</button>
+              </div>
 
-            <div
-              className="App-button"
-              onClick={() => handleChoiceSubmit(this.state.answers[2])}
-            >
-              <button>{this.state.answers[2]}</button>
-            </div>
-          </p>
-        </div>
-      );
+              <div
+                className="App-button"
+                onClick={() => handleChoiceSubmit(this.state.answers[2])}
+              >
+                <button>{this.state.answers[2]}</button>
+              </div>
+            </p>
+          </div>
+        );
+      else
+        return (
+          <div className="App">
+            This is your truth and lies! I wonder what the others think about
+            you...
+            <ScrollToBottom className="App-chatbox">
+              {this.state.messages.map((msg: ChatMessage) => {
+                msgIndex++;
+                return (
+                  <div key={msgIndex} className="App-chatbox-elem">
+                    <p>{msg.author}</p>
+                    <p>{msg.message}</p>
+                  </div>
+                );
+              })}
+            </ScrollToBottom>
+          </div>
+        );
     } else if (this.state.gameState === 1) {
       return (
         <div className="App">

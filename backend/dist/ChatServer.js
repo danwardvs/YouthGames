@@ -12,6 +12,7 @@ let ChatServer = /** @class */ (() => {
         constructor() {
             this.users = [];
             this.submissions = [];
+            this.correctUsers = [];
             this.boundInputListener = this.inputListener.bind(this);
             this._app = express();
             this.port = process.env.PORT || ChatServer.PORT;
@@ -35,11 +36,16 @@ let ChatServer = /** @class */ (() => {
             }
             return array;
         }
+        sendResults() {
+            let message = "^^";
+            this.users.map((user) => (message += user.name + "$" + user.score + "|"));
+            this.io.emit("message", { author: "Director", message: message });
+        }
         generateQuestion() {
             const currentSub = this.submissions[this.submissionIndex];
             let answers = [currentSub.truth_1, currentSub.truth_2, currentSub.lie];
             this.shuffle(answers);
-            this.correctAnswer = ">>" + currentSub.lie;
+            this.correctAnswer = "##" + currentSub.lie;
             const message = "<<" +
                 currentSub.author +
                 "<<" +
@@ -83,6 +89,15 @@ let ChatServer = /** @class */ (() => {
                 }
                 else {
                     WriteLog_1.WriteLog.log("Error: No more submissions.", this.users);
+                }
+            }
+            else if (input === "results") {
+                if (this.submissions.length > 0) {
+                    this.sendResults();
+                    WriteLog_1.WriteLog.log("Director: Sending results.", this.users);
+                }
+                else {
+                    WriteLog_1.WriteLog.log("Error: No submissions to give results for.", this.users);
                 }
             }
             else if (input === "restart") {
@@ -142,10 +157,11 @@ let ChatServer = /** @class */ (() => {
                         else if (m.message.startsWith("##")) {
                             this.io.emit("message", {
                                 author: m.author,
-                                message: "has submitted their truth/lies..."
+                                message: "has submitted their guess..."
                             });
-                            if (m.message.substring(2, m.message.length) === this.correctAnswer) {
-                                this.users = this.users.map((elem) => elem.name === m.author ? Object.assign(Object.assign({}, elem), { score: elem.score++ }) : elem);
+                            if (m.message === this.correctAnswer) {
+                                this.users = this.users.map((elem) => elem.name === m.author
+                                    ? Object.assign(Object.assign({}, elem), { score: elem.score + 1 }) : elem);
                                 this.correctUsers.push(m.author);
                             }
                         }

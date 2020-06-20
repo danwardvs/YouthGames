@@ -20,6 +20,7 @@ class WriteLog {
         console.log("start - promps the user to enter their truths and lies    (state 1)");
         console.log("answer - the intro to beginning of choosing answers       (state 3)");
         console.log("next - promps the user to choose answers                  (state 4)");
+        console.log("results - shows the results of the round                  (state 6)");
         console.log("help - how you got here");
         process.stdout.write(": ");
     }

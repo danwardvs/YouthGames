@@ -37,6 +37,9 @@ export class WriteLog {
     console.log(
       "next - promps the user to choose answers                  (state 4)"
     );
+    console.log(
+      "results - shows the results of the round                  (state 6)"
+    );
     console.log("help - how you got here");
     process.stdout.write(": ");
   }
