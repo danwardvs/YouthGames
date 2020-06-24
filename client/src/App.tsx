@@ -1,5 +1,5 @@
 import React from "react";
-import logo from "./logo.svg";
+import logo from "./logan.png";
 import "./App.css";
 import { ChatMessage, ChatState } from "./types";
 import { ChatContext } from "./ChatContext";
@@ -17,12 +17,7 @@ interface user {
 
 class App extends React.Component {
   static contextType = ChatContext;
-  test = [
-    { author: "Allan", score: 321 },
-    { author: "Danny", score: 999 },
-    { author: "Zllan", score: 1 },
-    { author: "An", score: 21 }
-  ];
+
   state: ChatState = {
     messages: [
       {
@@ -235,6 +230,7 @@ class App extends React.Component {
     } else if (this.state.gameState === 0) {
       return (
         <div className="App">
+          <img src={logo} className="App-logo" alt="logo" />
           Welcome to Danny's (probably broken) online youth games.
           <input
             className="App-Textarea"
@@ -274,6 +270,7 @@ class App extends React.Component {
     } else if (this.state.gameState === 6) {
       return (
         <div className="App">
+          <img src={logo} className="App-logo" alt="logo" />
           Here's the results!
           {this.state.results
             .sort(function (a, b) {
@@ -289,17 +286,6 @@ class App extends React.Component {
         <div className="App">
           <img src={logo} className="App-logo" alt="logo" />
           Get ready to guess the answer that you think is a lie.
-          <ScrollToBottom className="App-chatbox">
-            {this.state.messages.map((msg: ChatMessage) => {
-              msgIndex++;
-              return (
-                <div key={msgIndex} className="App-chatbox-elem">
-                  <p>{msg.author}</p>
-                  <p>{msg.message}</p>
-                </div>
-              );
-            })}
-          </ScrollToBottom>
         </div>
       );
     } else if (this.state.gameState === 4) {
