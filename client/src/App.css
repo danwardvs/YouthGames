@@ -48,6 +48,23 @@
   font-size: 12px;
 }
 
+.headline {
+  font-size: 24px;
+  padding: 12px;
+}
+
+.results-table {
+  padding: 20px;
+  border: 1px solid black;
+  font-size: 18px;
+  border-collapse: collapse;
+}
+th,
+td {
+  padding: 7px;
+  border: 1px solid gray;
+}
+
 input {
   background: none;
   border: 1px solid #fff;

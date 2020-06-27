@@ -7,7 +7,7 @@ export class SocketService {
 
   public init(): SocketService {
     console.log("initiating socket service");
-    this.socket = io("192.168.0.13:8080");
+    this.socket = io("localhost:8080");
     return this;
   }
 

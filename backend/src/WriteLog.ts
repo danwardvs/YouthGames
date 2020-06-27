@@ -3,17 +3,31 @@ interface User {
   score: number;
 }
 
+interface Submission {
+  author: string;
+  truth_1: string;
+  truth_2: string;
+  lie: string;
+}
+
 export class WriteLog {
   private static lastMessage: string;
 
-  public static log(message: string, users: User[]) {
+  private static hasSubmission(user: User, submissions: Submission[]) {
+    if (submissions.find((elem) => elem.author === user.name)) return "(✓)";
+    return "(X)";
+  }
+
+  public static log(message: string, users: User[], submissions: Submission[]) {
     this.lastMessage = message;
     console.clear();
     console.log(
       "Connected users(" +
         users.length +
         "): " +
-        users.map((value) => value.name)
+        users.map((value) => {
+          return value.name + this.hasSubmission(value, submissions);
+        })
     );
     console.log(message);
 
@@ -40,17 +54,27 @@ export class WriteLog {
     console.log(
       "results - shows the results of the round                  (state 6)"
     );
+    console.log(
+      "end - shows the final results, ends game                  (state 7)"
+    );
+    console.log("test - populates the game with some test data");
     console.log("help - how you got here");
     process.stdout.write(": ");
   }
 
-  public static updateUsers(users: User[], newUser: string) {
+  public static updateUsers(
+    users: User[],
+    newUser: string,
+    submissions: Submission[]
+  ) {
     console.clear();
     console.log(
       "Connected users(" +
         users.length +
         "): " +
-        users.map((value) => value.name)
+        users.map((value) => {
+          return value.name + this.hasSubmission(value, submissions);
+        })
     );
     console.log("User " + newUser + " joined");
     console.log(this.lastMessage);

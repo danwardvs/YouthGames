@@ -5,10 +5,22 @@ import { ChatMessage, ChatState } from "./types";
 import { ChatContext } from "./ChatContext";
 import ScrollToBottom from "react-scroll-to-bottom";
 
+enum GameState {
+  Home = 0,
+  EnteredName,
+  SubmitAnswers,
+  IntroGuess,
+  SubmitGuess,
+  AfterGuess,
+  Results,
+  Final
+}
+
 // ** submitting user's truths and lies
 // << receiving users truths and lies to guess
 // ## submitting guess
 // ^^ recieve stats
+// FF final stats
 
 interface user {
   author: string;
@@ -33,6 +45,19 @@ class App extends React.Component {
     gameState: 0,
     submittedAnswer: false
   };
+
+  private setStats(statMessage: string) {
+    const finalResults: user[] = [];
+    const newResults = statMessage.substring(2).split("|");
+    newResults.forEach((elem) => {
+      if (elem) {
+        const val = elem.split("$");
+        const user = { author: val[0], score: parseInt(val[1]) };
+        finalResults.push(user);
+      }
+    });
+    this.setState({ results: finalResults });
+  }
 
   private setAnswers = (m: ChatMessage) => {
     console.log(m.message);
@@ -72,6 +97,8 @@ class App extends React.Component {
       let push = true;
       if (m.author === "Director") {
         if (m.message === "Starting the game!") this.setState({ gameState: 2 });
+        if (m.message === "Ending the game.") this.setState({ gameState: 7 });
+
         if (m.message === "Restarting the game!") {
           this.setState({
             messages: [],
@@ -93,16 +120,13 @@ class App extends React.Component {
         }
         if (m.message.startsWith("^^")) {
           this.setState({ gameState: 6 });
-          const finalResults: user[] = [];
-          const newResults = m.message.substring(2).split("|");
-          newResults.forEach((elem) => {
-            if (elem) {
-              const val = elem.split("$");
-              const user = { author: val[0], score: parseInt(val[1]) };
-              finalResults.push(user);
-            }
-          });
-          this.setState({ results: finalResults });
+          this.setStats(m.message);
+          push = false;
+        }
+        if (m.message.startsWith("FF")) {
+          this.setStats(m.message);
+
+          this.setState({ gameState: 7 });
           push = false;
         }
       }
@@ -172,7 +196,49 @@ class App extends React.Component {
     };
 
     let msgIndex = 0;
-    if (this.state.gameState === 2) {
+
+    if (this.state.gameState === GameState.Home) {
+      return (
+        <div className="App">
+          <img src={logo} className="App-logo" alt="logo" />
+          Welcome to Danny's (probably broken) online youth games.
+          <input
+            className="App-Textarea"
+            placeholder="Please enter your (real) name!"
+            onChange={updateInput}
+            value={this.state.nameInput}
+          />
+          <p>
+            <div
+              className="App-button"
+              onClick={() => {
+                handleName();
+              }}
+            >
+              <button>Enter Name</button>
+            </div>
+          </p>
+        </div>
+      );
+    } else if (this.state.gameState === GameState.EnteredName) {
+      return (
+        <div className="App">
+          <img src={logo} className="App-logo" alt="logo" />
+          Howdy there {this.state.author}!
+          <ScrollToBottom className="App-chatbox">
+            {this.state.messages.map((msg: ChatMessage) => {
+              msgIndex++;
+              return (
+                <div key={msgIndex} className="App-chatbox-elem">
+                  <p>{msg.author}</p>
+                  <p>{msg.message}</p>
+                </div>
+              );
+            })}
+          </ScrollToBottom>
+        </div>
+      );
+    } else if (this.state.gameState === GameState.SubmitAnswers) {
       return (
         <div className="App">
           <ScrollToBottom className="App-chatbox">
@@ -227,68 +293,14 @@ class App extends React.Component {
           )}
         </div>
       );
-    } else if (this.state.gameState === 0) {
-      return (
-        <div className="App">
-          <img src={logo} className="App-logo" alt="logo" />
-          Welcome to Danny's (probably broken) online youth games.
-          <input
-            className="App-Textarea"
-            placeholder="Please enter your (real) name!"
-            onChange={updateInput}
-            value={this.state.nameInput}
-          />
-          <p>
-            <div
-              className="App-button"
-              onClick={() => {
-                handleName();
-              }}
-            >
-              <button>Enter Name</button>
-            </div>
-          </p>
-        </div>
-      );
-    } else if (this.state.gameState === 5) {
-      return (
-        <div className="App">
-          {this.randomMessage()}
-          <ScrollToBottom className="App-chatbox">
-            {this.state.messages.map((msg: ChatMessage) => {
-              msgIndex++;
-              return (
-                <div key={msgIndex} className="App-chatbox-elem">
-                  <p>{msg.author}</p>
-                  <p>{msg.message}</p>
-                </div>
-              );
-            })}
-          </ScrollToBottom>
-        </div>
-      );
-    } else if (this.state.gameState === 6) {
-      return (
-        <div className="App">
-          <img src={logo} className="App-logo" alt="logo" />
-          Here's the results!
-          {this.state.results
-            .sort(function (a, b) {
-              return b.score - a.score;
-            })
-            .map((elem) => {
-              return <div>{elem.author + ": " + elem.score}</div>;
-            })}
-        </div>
-      );
-    } else if (this.state.gameState === 3) {
+    } else if (this.state.gameState === GameState.IntroGuess) {
       return (
         <div className="App">
           <img src={logo} className="App-logo" alt="logo" />
           Get ready to guess the answer that you think is a lie.
         </div>
       );
-    } else if (this.state.gameState === 4) {
+    } else if (this.state.gameState === GameState.SubmitGuess) {
       if (this.state.answerAuthor !== this.state.author)
         return (
           <div className="App">
@@ -335,10 +347,10 @@ class App extends React.Component {
             </ScrollToBottom>
           </div>
         );
-    } else if (this.state.gameState === 1) {
+    } else if (this.state.gameState === GameState.AfterGuess) {
       return (
         <div className="App">
-          <img src={logo} className="App-logo" alt="logo" />
+          {this.randomMessage()}
           <ScrollToBottom className="App-chatbox">
             {this.state.messages.map((msg: ChatMessage) => {
               msgIndex++;
@@ -350,6 +362,80 @@ class App extends React.Component {
               );
             })}
           </ScrollToBottom>
+        </div>
+      );
+    } else if (this.state.gameState === GameState.Results) {
+      return (
+        <div className="App">
+          <img src={logo} className="App-logo" alt="logo" />
+          <div className="headline">Here's the results!</div>
+          <table className="results-table">
+            {this.state.results
+              .sort(function (a, b) {
+                return b.score - a.score;
+              })
+              .map((elem, index) => {
+                return (
+                  <tr>
+                    <td>{index + 1}</td> <td>{elem.author}</td>{" "}
+                    <td>{elem.score}</td>
+                  </tr>
+                );
+              })}
+          </table>
+        </div>
+      );
+    } else if (this.state.gameState === GameState.Final) {
+      const sorted_results = this.state.results.sort(function (a, b) {
+        return b.score - a.score;
+      });
+      return (
+        <div className="App">
+          <img src={logo} className="App-logo" alt="logo" />
+          Game has ended...
+          {sorted_results.length > 0 && (
+            <>
+              <div className="headline">
+                Congratulations to {sorted_results[0].author}!
+              </div>
+              <div className="headline">
+                Placed 1st with {sorted_results[0].score} correct guesses!
+              </div>
+            </>
+          )}
+          {sorted_results.length > 2 && (
+            <>
+              Also a shoutout to {sorted_results[1].author} for 2nd and{" "}
+              {sorted_results[2].author} for 3rd.
+            </>
+          )}
+          <div>{"*"}</div>
+          <div>{"*"}</div>
+          <div>{"*"}</div>
+          <table className="results-table">
+            {this.state.results
+              .sort(function (a, b) {
+                return b.score - a.score;
+              })
+              .map((elem, index) => {
+                return (
+                  <tr>
+                    <td>{index + 1}</td> <td>{elem.author}</td>{" "}
+                    <td>{elem.score}</td>
+                  </tr>
+                );
+              })}
+          </table>
+          <div>{"*"}</div>
+          <div>{"*"}</div>I didn't program any logic for ties, so if there's a
+          tie I think the winner will be whoever joined first.
+          <div>{"*"}</div>
+          <div>{"*"}</div>
+          <div>{"*"}</div>
+          <div>{"*"}</div>
+          <div>{"*"}</div>
+          <div>{"*"}</div>
+          This game was brought to you by Danny Van Stemp. I hope you enjoyed!
         </div>
       );
     }

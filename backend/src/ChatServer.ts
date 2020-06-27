@@ -59,8 +59,8 @@ export class ChatServer {
 
     return array;
   }
-  private sendResults() {
-    let message = "^^";
+  private sendResults(final: boolean) {
+    let message = final ? "FF" : "^^";
     this.users.map((user) => (message += user.name + "$" + user.score + "|"));
     this.io.emit("message", { author: "Director", message: message });
   }
@@ -86,19 +86,27 @@ export class ChatServer {
     const input = d.toString().trim();
     if (input.startsWith("message ")) {
       const messageBody = input.substring(7, input.length);
-      WriteLog.log("Director: Sending message: " + messageBody, this.users);
+      WriteLog.log(
+        "Director: Sending message: " + messageBody,
+        this.users,
+        this.submissions
+      );
       this.io.emit("message", {
         author: "Director",
         message: messageBody
       });
     } else if (input === "start") {
-      WriteLog.log("Director: Game started", this.users);
+      WriteLog.log("Director: Game started", this.users, this.submissions);
       this.io.emit("message", {
         author: "Director",
         message: "Starting the game!"
       });
     } else if (input === "answer") {
-      WriteLog.log("Director: Start answer portion", this.users);
+      WriteLog.log(
+        "Director: Start answer portion",
+        this.users,
+        this.submissions
+      );
       this.submissionIndex = 0;
       this.io.emit("message", {
         author: "Director",
@@ -107,32 +115,71 @@ export class ChatServer {
     } else if (input === "next") {
       if (this.submissionIndex < this.submissions.length) {
         this.generateQuestion();
-        WriteLog.log("Director: Asking users for a question.", this.users);
+        WriteLog.log(
+          "Director: Asking users for a question.",
+          this.users,
+          this.submissions
+        );
         this.submissionIndex++;
       } else {
-        WriteLog.log("Error: No more submissions.", this.users);
+        WriteLog.log(
+          "Error: No more submissions.",
+          this.users,
+          this.submissions
+        );
       }
     } else if (input === "results") {
       if (this.submissions.length > 0) {
-        this.sendResults();
-        WriteLog.log("Director: Sending results.", this.users);
+        this.sendResults(false);
+        WriteLog.log(
+          "Director: Sending results.",
+          this.users,
+          this.submissions
+        );
       } else {
-        WriteLog.log("Error: No submissions to give results for.", this.users);
+        WriteLog.log(
+          "Error: No submissions to give results for.",
+          this.users,
+          this.submissions
+        );
       }
     } else if (input === "restart") {
       this.users = [];
       this.submissions = [];
       this.submissionIndex = 0;
       this.correctAnswer = "";
-      WriteLog.log("Server: Restarting server", this.users);
+      WriteLog.log("Server: Restarting server", this.users, this.submissions);
       this.io.emit("message", {
         author: "Director",
         message: "Restarting the game!"
       });
+    } else if (input === "test") {
+      this.users = [
+        { name: "Danny", score: 99 },
+
+        { name: "Allan", score: 99 },
+        { name: "Miriam", score: 99 }
+      ];
+      this.submissions = [
+        { author: "Allan", truth_1: "1", truth_2: "2", lie: "3" },
+        { author: "Miriam", truth_1: "1", truth_2: "2", lie: "3" },
+        { author: "Danny", truth_1: "1", truth_2: "2", lie: "3" }
+      ];
+
+      this.submissionIndex = 0;
+      this.correctAnswer = "3";
+      WriteLog.log(
+        "Server: Populating test data.",
+        this.users,
+        this.submissions
+      );
+    } else if (input === "end") {
+      WriteLog.log("Director: Ending the game.", this.users, this.submissions);
+      this.sendResults(true);
     } else if (input === "help") {
       WriteLog.help();
     } else {
-      WriteLog.log("Invalid command: " + input, this.users);
+      WriteLog.log("Invalid command: " + input, this.users, this.submissions);
     }
   }
   private boundInputListener = this.inputListener.bind(this);
@@ -149,7 +196,11 @@ export class ChatServer {
   private listen(): void {
     this.listenCommand();
     this.server.listen(this.port, () => {
-      WriteLog.log("Server: Running on port " + String(this.port), this.users);
+      WriteLog.log(
+        "Server: Running on port " + String(this.port),
+        this.users,
+        this.submissions
+      );
     });
 
     this.io.on(ChatEvent.CONNECT, (socket: any) => {
@@ -160,9 +211,18 @@ export class ChatServer {
 
         if (m.message) {
           if (m.message === "has arrived!") {
-            this.users.push({ name: m.author, score: 0 });
-            WriteLog.updateUsers(this.users, m.author);
-            this.io.emit("message", m);
+            if (!this.users.find((elem) => elem.name === m.author)) {
+              this.users.push({ name: m.author, score: 0 });
+              WriteLog.updateUsers(this.users, m.author, this.submissions);
+
+              this.io.emit("message", m);
+            } else {
+              WriteLog.log(
+                m.author + " has reconnected.",
+                this.users,
+                this.submissions
+              );
+            }
           } else if (m.message.startsWith("**")) {
             this.io.emit("message", {
               author: m.author,
@@ -176,6 +236,11 @@ export class ChatServer {
               truth_2: answers[1],
               lie: answers[2]
             });
+            WriteLog.log(
+              m.author + " has submitted their answer.",
+              this.users,
+              this.submissions
+            );
           } else if (m.message.startsWith("##")) {
             this.io.emit("message", {
               author: m.author,
