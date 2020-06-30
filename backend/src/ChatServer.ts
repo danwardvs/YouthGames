@@ -16,6 +16,10 @@ interface User {
   name: string;
   score: number;
 }
+interface CorrectAnswer{
+  name:string;
+  answer:string;
+}
 
 var cors = require("cors");
 
@@ -28,7 +32,7 @@ export class ChatServer {
   private users: User[] = [];
   private submissions: Submission[] = [];
   private submissionIndex: number;
-  private correctAnswer: string;
+  private correctAnswer: CorrectAnswer;
   private correctUsers: string[] = [];
 
   constructor() {
@@ -59,9 +63,24 @@ export class ChatServer {
 
     return array;
   }
+
+  private getCorrectUser(user: User) {
+    if(this.)
+    if (this.correctUsers.includes(user.name)) return "1";
+
+    return "0";
+
+  }
+
   private sendResults(final: boolean) {
     let message = final ? "FF" : "^^";
-    this.users.map((user) => (message += user.name + "$" + user.score + "|"));
+
+    this.users.map(
+      (user) =>
+        (message +=
+          user.name + "$" + user.score + "%" + this.getCorrectUser(user) + "|")
+    );
+    message += "#" + this.correctAnswer.answer.substring(1);
     this.io.emit("message", { author: "Director", message: message });
   }
 
@@ -69,7 +88,7 @@ export class ChatServer {
     const currentSub = this.submissions[this.submissionIndex];
     let answers = [currentSub.truth_1, currentSub.truth_2, currentSub.lie];
     this.shuffle(answers);
-    this.correctAnswer = "##" + currentSub.lie;
+    this.correctAnswer.answer = "##" + currentSub.lie;
     const message =
       "<<" +
       currentSub.author +
@@ -114,6 +133,7 @@ export class ChatServer {
       });
     } else if (input === "next") {
       if (this.submissionIndex < this.submissions.length) {
+        this.correctUsers = [];
         this.generateQuestion();
         WriteLog.log(
           "Director: Asking users for a question.",
@@ -147,7 +167,7 @@ export class ChatServer {
       this.users = [];
       this.submissions = [];
       this.submissionIndex = 0;
-      this.correctAnswer = "";
+      this.correctAnswer = null;
       WriteLog.log("Server: Restarting server", this.users, this.submissions);
       this.io.emit("message", {
         author: "Director",

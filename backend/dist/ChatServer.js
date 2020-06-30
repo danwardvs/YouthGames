@@ -36,9 +36,16 @@ let ChatServer = /** @class */ (() => {
             }
             return array;
         }
+        getCorrectUser(user) {
+            if (this.correctUsers.includes(user.name))
+                return "1";
+            return "0";
+        }
         sendResults(final) {
             let message = final ? "FF" : "^^";
-            this.users.map((user) => (message += user.name + "$" + user.score + "|"));
+            this.users.map((user) => (message +=
+                user.name + "$" + user.score + "%" + this.getCorrectUser(user) + "|"));
+            message += "#" + this.correctAnswer.substring(1);
             this.io.emit("message", { author: "Director", message: message });
         }
         generateQuestion() {
@@ -83,6 +90,7 @@ let ChatServer = /** @class */ (() => {
             }
             else if (input === "next") {
                 if (this.submissionIndex < this.submissions.length) {
+                    this.correctUsers = [];
                     this.generateQuestion();
                     WriteLog_1.WriteLog.log("Director: Asking users for a question.", this.users, this.submissions);
                     this.submissionIndex++;

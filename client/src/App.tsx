@@ -22,9 +22,10 @@ enum GameState {
 // ^^ recieve stats
 // FF final stats
 
-interface user {
+interface User {
   author: string;
   score: number;
+  correct: boolean;
 }
 
 class App extends React.Component {
@@ -43,16 +44,26 @@ class App extends React.Component {
     author: "newUser",
     results: [],
     gameState: 0,
+    correctAnswer: "",
     submittedAnswer: false
   };
 
   private setStats(statMessage: string) {
-    const finalResults: user[] = [];
-    const newResults = statMessage.substring(2).split("|");
+    const finalResults: User[] = [];
+    const splitAnswers = statMessage.split("#");
+    console.log(splitAnswers[1]);
+    this.setState({ correctAnswer: splitAnswers[1] });
+    let newResults = splitAnswers[0].substring(2).split("|");
+
     newResults.forEach((elem) => {
       if (elem) {
         const val = elem.split("$");
-        const user = { author: val[0], score: parseInt(val[1]) };
+        const correct = val[1].split("%");
+        const user = {
+          author: val[0],
+          score: parseInt(correct[0]),
+          correct: correct[1] === "1"
+        };
         finalResults.push(user);
       }
     });
@@ -60,12 +71,9 @@ class App extends React.Component {
   }
 
   private setAnswers = (m: ChatMessage) => {
-    console.log(m.message);
     const split_answers = m.message.split("<<");
     this.setState({ answerAuthor: split_answers[1] });
-    console.log(split_answers);
 
-    console.log(split_answers.slice(2, 5));
     this.setState({ answers: split_answers.slice(2, 5) });
   };
   private randomMessage = () => {
@@ -368,7 +376,14 @@ class App extends React.Component {
       return (
         <div className="App">
           <img src={logo} className="App-logo" alt="logo" />
-          <div className="headline">Here's the results!</div>
+          <div className="headline">
+            {this.state.results.filter(
+              (elem) => elem.author === this.state.author && elem.correct
+            ).length > 0
+              ? "You are correct!! (✓)"
+              : "You are incorrect... (X)"}
+          </div>
+          The correct answer was {this.state.correctAnswer}
           <table className="results-table">
             {this.state.results
               .sort(function (a, b) {
@@ -379,6 +394,13 @@ class App extends React.Component {
                   <tr>
                     <td>{index + 1}</td> <td>{elem.author}</td>{" "}
                     <td>{elem.score}</td>
+                    <td>
+                      {elem.correct ? (
+                        <span className="boxCorrect">✓</span>
+                      ) : (
+                        <span className="boxIncorrect">X</span>
+                      )}
+                    </td>
                   </tr>
                 );
               })}

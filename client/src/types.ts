@@ -2,9 +2,10 @@ export interface ChatMessage {
   author: string;
   message: string;
 }
-interface user {
+interface User {
   author: string;
   score: number;
+  correct: boolean;
 }
 
 export interface ChatState {
@@ -14,6 +15,7 @@ export interface ChatState {
   author: string;
   messages: ChatMessage[];
   gameState: number;
-  results: user[];
+  results: User[];
+  correctAnswer: string;
   submittedAnswer: boolean;
 }
