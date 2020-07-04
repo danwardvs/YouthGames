@@ -5,7 +5,7 @@ export interface ChatMessage {
 interface User {
   author: string;
   score: number;
-  correct: boolean;
+  correct: string;
 }
 
 export interface ChatState {

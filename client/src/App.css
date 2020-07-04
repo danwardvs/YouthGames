@@ -61,6 +61,11 @@
   color: #ff0000;
 }
 
+.boxSelf {
+  font-size: 24px;
+  color: #00319c;
+}
+
 .results-table {
   padding: 20px;
   border: 1px solid black;

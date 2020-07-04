@@ -12,6 +12,10 @@ let ChatServer = /** @class */ (() => {
         constructor() {
             this.users = [];
             this.submissions = [];
+            this.correctAnswer = {
+                name: "Jim",
+                answer: "I quite dislike bananas"
+            };
             this.correctUsers = [];
             this.boundInputListener = this.inputListener.bind(this);
             this._app = express();
@@ -37,6 +41,8 @@ let ChatServer = /** @class */ (() => {
             return array;
         }
         getCorrectUser(user) {
+            if (this.correctAnswer.name === user.name)
+                return "2";
             if (this.correctUsers.includes(user.name))
                 return "1";
             return "0";
@@ -45,14 +51,14 @@ let ChatServer = /** @class */ (() => {
             let message = final ? "FF" : "^^";
             this.users.map((user) => (message +=
                 user.name + "$" + user.score + "%" + this.getCorrectUser(user) + "|"));
-            message += "#" + this.correctAnswer.substring(1);
+            message += "#" + this.correctAnswer.answer.substring(2);
             this.io.emit("message", { author: "Director", message: message });
         }
         generateQuestion() {
             const currentSub = this.submissions[this.submissionIndex];
             let answers = [currentSub.truth_1, currentSub.truth_2, currentSub.lie];
             this.shuffle(answers);
-            this.correctAnswer = "##" + currentSub.lie;
+            this.correctAnswer.answer = "##" + currentSub.lie;
             const message = "<<" +
                 currentSub.author +
                 "<<" +
@@ -82,6 +88,7 @@ let ChatServer = /** @class */ (() => {
             }
             else if (input === "answer") {
                 WriteLog_1.WriteLog.log("Director: Start answer portion", this.users, this.submissions);
+                this.correctAnswer = { answer: "I quite like bananas", name: "Jimbo" };
                 this.submissionIndex = 0;
                 this.io.emit("message", {
                     author: "Director",
@@ -112,7 +119,7 @@ let ChatServer = /** @class */ (() => {
                 this.users = [];
                 this.submissions = [];
                 this.submissionIndex = 0;
-                this.correctAnswer = "";
+                this.correctAnswer = null;
                 WriteLog_1.WriteLog.log("Server: Restarting server", this.users, this.submissions);
                 this.io.emit("message", {
                     author: "Director",
@@ -131,7 +138,7 @@ let ChatServer = /** @class */ (() => {
                     { author: "Danny", truth_1: "1", truth_2: "2", lie: "3" }
                 ];
                 this.submissionIndex = 0;
-                this.correctAnswer = "3";
+                this.correctAnswer = { answer: "3", name: "Allan" };
                 WriteLog_1.WriteLog.log("Server: Populating test data.", this.users, this.submissions);
             }
             else if (input === "end") {
@@ -192,7 +199,7 @@ let ChatServer = /** @class */ (() => {
                                 author: m.author,
                                 message: "has submitted their guess..."
                             });
-                            if (m.message === this.correctAnswer) {
+                            if (m.message === this.correctAnswer.answer) {
                                 this.users = this.users.map((elem) => elem.name === m.author
                                     ? Object.assign(Object.assign({}, elem), { score: elem.score + 1 }) : elem);
                                 this.correctUsers.push(m.author);

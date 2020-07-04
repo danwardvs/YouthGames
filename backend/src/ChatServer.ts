@@ -16,9 +16,9 @@ interface User {
   name: string;
   score: number;
 }
-interface CorrectAnswer{
-  name:string;
-  answer:string;
+interface CorrectAnswer {
+  name: string;
+  answer: string;
 }
 
 var cors = require("cors");
@@ -32,7 +32,10 @@ export class ChatServer {
   private users: User[] = [];
   private submissions: Submission[] = [];
   private submissionIndex: number;
-  private correctAnswer: CorrectAnswer;
+  private correctAnswer: CorrectAnswer = {
+    name: "Jim",
+    answer: "I quite dislike bananas"
+  };
   private correctUsers: string[] = [];
 
   constructor() {
@@ -65,11 +68,10 @@ export class ChatServer {
   }
 
   private getCorrectUser(user: User) {
-    if(this.)
+    if (this.correctAnswer.name === user.name) return "2";
     if (this.correctUsers.includes(user.name)) return "1";
 
     return "0";
-
   }
 
   private sendResults(final: boolean) {
@@ -80,7 +82,7 @@ export class ChatServer {
         (message +=
           user.name + "$" + user.score + "%" + this.getCorrectUser(user) + "|")
     );
-    message += "#" + this.correctAnswer.answer.substring(1);
+    message += "#" + this.correctAnswer.answer.substring(2);
     this.io.emit("message", { author: "Director", message: message });
   }
 
@@ -126,6 +128,7 @@ export class ChatServer {
         this.users,
         this.submissions
       );
+      this.correctAnswer = { answer: "I quite like bananas", name: "Jimbo" };
       this.submissionIndex = 0;
       this.io.emit("message", {
         author: "Director",
@@ -187,7 +190,7 @@ export class ChatServer {
       ];
 
       this.submissionIndex = 0;
-      this.correctAnswer = "3";
+      this.correctAnswer = { answer: "3", name: "Allan" };
       WriteLog.log(
         "Server: Populating test data.",
         this.users,
@@ -267,7 +270,7 @@ export class ChatServer {
               message: "has submitted their guess..."
             });
 
-            if (m.message === this.correctAnswer) {
+            if (m.message === this.correctAnswer.answer) {
               this.users = this.users.map((elem) =>
                 elem.name === m.author
                   ? { ...elem, score: elem.score + 1 }

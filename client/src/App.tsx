@@ -25,7 +25,7 @@ enum GameState {
 interface User {
   author: string;
   score: number;
-  correct: boolean;
+  correct: string;
 }
 
 class App extends React.Component {
@@ -49,9 +49,9 @@ class App extends React.Component {
   };
 
   private setStats(statMessage: string) {
+    console.log(statMessage);
     const finalResults: User[] = [];
     const splitAnswers = statMessage.split("#");
-    console.log(splitAnswers[1]);
     this.setState({ correctAnswer: splitAnswers[1] });
     let newResults = splitAnswers[0].substring(2).split("|");
 
@@ -62,7 +62,7 @@ class App extends React.Component {
         const user = {
           author: val[0],
           score: parseInt(correct[0]),
-          correct: correct[1] === "1"
+          correct: correct[1]
         };
         finalResults.push(user);
       }
@@ -76,6 +76,55 @@ class App extends React.Component {
 
     this.setState({ answers: split_answers.slice(2, 5) });
   };
+
+  private renderCorrectResponse = (results: User[]) => {
+    let type = 0;
+    if (
+      results.filter(
+        (elem) => elem.author === this.state.author && elem.correct === "1"
+      ).length > 0
+    )
+      type = 1;
+    else if (
+      results.filter(
+        (elem) => elem.author === this.state.author && elem.correct === "2"
+      ).length > 0
+    )
+      type = 2;
+
+    if (type === 1)
+      return (
+        <div className="headline">
+          You are correct!! <span className="boxCorrect">✓</span>
+        </div>
+      );
+    if (type === 0)
+      return (
+        <div className="headline">
+          You are incorrect... <span className="boxCorrect">✓</span>
+        </div>
+      );
+    return (
+      <div className="headline">
+        Let's see how the others guessed your lies.
+        <span className="boxSelf">0</span>
+      </div>
+    );
+  };
+
+  private renderBox = (correct: string) => {
+    if (correct === "0")
+      return (
+        <>
+          <span className="boxIncorrect">X</span>
+        </>
+      );
+
+    if (correct === "1") return <span className="boxCorrect">✓</span>;
+
+    return <span className="boxSelf">0</span>;
+  };
+
   private randomMessage = () => {
     const replies = [
       "Thanks for your guess! Let's see how you did.",
@@ -376,14 +425,8 @@ class App extends React.Component {
       return (
         <div className="App">
           <img src={logo} className="App-logo" alt="logo" />
-          <div className="headline">
-            {this.state.results.filter(
-              (elem) => elem.author === this.state.author && elem.correct
-            ).length > 0
-              ? "You are correct!! (✓)"
-              : "You are incorrect... (X)"}
-          </div>
-          The correct answer was {this.state.correctAnswer}
+          {this.renderCorrectResponse(this.state.results)}
+          The correct answer was "{this.state.correctAnswer}"
           <table className="results-table">
             {this.state.results
               .sort(function (a, b) {
@@ -394,13 +437,7 @@ class App extends React.Component {
                   <tr>
                     <td>{index + 1}</td> <td>{elem.author}</td>{" "}
                     <td>{elem.score}</td>
-                    <td>
-                      {elem.correct ? (
-                        <span className="boxCorrect">✓</span>
-                      ) : (
-                        <span className="boxIncorrect">X</span>
-                      )}
-                    </td>
+                    <td>{this.renderBox(elem.correct)}</td>
                   </tr>
                 );
               })}
