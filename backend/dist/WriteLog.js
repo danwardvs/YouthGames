@@ -4,17 +4,24 @@ exports.WriteLog = void 0;
 class WriteLog {
     static hasSubmission(user, submissions) {
         if (submissions.find((elem) => elem.author === user.name))
-            return "(✓)";
-        return "(X)";
+            return "(✓";
+        return "(X";
     }
-    static log(message, users, submissions) {
+    static hasGuess(user, userGuessed) {
+        if (userGuessed.find((elem) => elem === user.name))
+            return ",✓)";
+        return ",X)";
+    }
+    static log(message, users, submissions, userGuessed) {
         this.lastMessage = message;
         console.clear();
         console.log("Connected users(" +
             users.length +
             "): " +
             users.map((value) => {
-                return value.name + this.hasSubmission(value, submissions);
+                return (value.name +
+                    this.hasSubmission(value, submissions) +
+                    this.hasGuess(value, userGuessed));
             }));
         console.log(message);
         process.stdout.write(": ");
@@ -33,13 +40,15 @@ class WriteLog {
         console.log("help - how you got here");
         process.stdout.write(": ");
     }
-    static updateUsers(users, newUser, submissions) {
+    static updateUsers(users, newUser, submissions, userGuessed) {
         console.clear();
         console.log("Connected users(" +
             users.length +
             "): " +
             users.map((value) => {
-                return value.name + this.hasSubmission(value, submissions);
+                return (value.name +
+                    this.hasSubmission(value, submissions) +
+                    this.hasGuess(value, userGuessed));
             }));
         console.log("User " + newUser + " joined");
         console.log(this.lastMessage);

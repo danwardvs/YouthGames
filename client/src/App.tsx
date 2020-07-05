@@ -91,6 +91,12 @@ class App extends React.Component {
       ).length > 0
     )
       type = 2;
+    else if (
+      results.filter(
+        (elem) => elem.author === this.state.author && elem.correct === "3"
+      ).length > 0
+    )
+      type = 3;
 
     if (type === 1)
       return (
@@ -101,7 +107,15 @@ class App extends React.Component {
     if (type === 0)
       return (
         <div className="headline">
-          You are incorrect... <span className="boxCorrect">✓</span>
+          You are incorrect... <span className="boxIncorrect">X</span>
+        </div>
+      );
+
+    if (type === 3)
+      return (
+        <div className="headline">
+          You didn't submit an answer (or were disconnected...){" "}
+          <span className="boxDisconnected">?</span>
         </div>
       );
     return (
@@ -121,6 +135,7 @@ class App extends React.Component {
       );
 
     if (correct === "1") return <span className="boxCorrect">✓</span>;
+    if (correct === "3") return <span className="boxDisconnect">?</span>;
 
     return <span className="boxSelf">0</span>;
   };
@@ -389,8 +404,10 @@ class App extends React.Component {
       else
         return (
           <div className="App">
-            This is your truth and lies! I wonder what the others think about
-            you...
+            <div className="headline">
+              This is your truth and lies! I wonder what the others think about
+              you...
+            </div>
             <ScrollToBottom className="App-chatbox">
               {this.state.messages.map((msg: ChatMessage) => {
                 msgIndex++;

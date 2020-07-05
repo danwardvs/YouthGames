@@ -14,11 +14,19 @@ export class WriteLog {
   private static lastMessage: string;
 
   private static hasSubmission(user: User, submissions: Submission[]) {
-    if (submissions.find((elem) => elem.author === user.name)) return "(✓)";
-    return "(X)";
+    if (submissions.find((elem) => elem.author === user.name)) return "(✓";
+    return "(X";
   }
-
-  public static log(message: string, users: User[], submissions: Submission[]) {
+  private static hasGuess(user: User, userGuessed: string[]) {
+    if (userGuessed.find((elem) => elem === user.name)) return ",✓)";
+    return ",X)";
+  }
+  public static log(
+    message: string,
+    users: User[],
+    submissions: Submission[],
+    userGuessed: string[]
+  ) {
     this.lastMessage = message;
     console.clear();
     console.log(
@@ -26,7 +34,11 @@ export class WriteLog {
         users.length +
         "): " +
         users.map((value) => {
-          return value.name + this.hasSubmission(value, submissions);
+          return (
+            value.name +
+            this.hasSubmission(value, submissions) +
+            this.hasGuess(value, userGuessed)
+          );
         })
     );
     console.log(message);
@@ -65,7 +77,8 @@ export class WriteLog {
   public static updateUsers(
     users: User[],
     newUser: string,
-    submissions: Submission[]
+    submissions: Submission[],
+    userGuessed: string[]
   ) {
     console.clear();
     console.log(
@@ -73,7 +86,11 @@ export class WriteLog {
         users.length +
         "): " +
         users.map((value) => {
-          return value.name + this.hasSubmission(value, submissions);
+          return (
+            value.name +
+            this.hasSubmission(value, submissions) +
+            this.hasGuess(value, userGuessed)
+          );
         })
     );
     console.log("User " + newUser + " joined");
