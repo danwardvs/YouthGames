@@ -1,9 +1,9 @@
 import React from "react";
 import logo from "./logan.png";
 import "./App.css";
-import { ChatMessage, ChatState } from "./types";
+import { ChatMessage, ChatState, User } from "./types";
 import { ChatContext } from "./ChatContext";
-import ScrollToBottom from "react-scroll-to-bottom";
+import { Chatbox } from "./Chatbox";
 
 enum GameState {
   Home = 0,
@@ -21,12 +21,6 @@ enum GameState {
 // ## submitting guess
 // ^^ recieve stats
 // FF final stats
-
-interface User {
-  author: string;
-  score: number;
-  correct: string;
-}
 
 class App extends React.Component {
   static contextType = ChatContext;
@@ -151,7 +145,8 @@ class App extends React.Component {
       "I hope they're not offended by your answer.",
       "Sending these off to a server somewhere far away.",
       'Fun fact, while we\'re waiting: A baby puffin is called a "puffling".',
-      "Fun fact, while we're waiting: Baby sea otters can't swim."
+      "Fun fact, while we're waiting: Baby sea otters can't swim.",
+      "Yee haw!"
     ];
     return replies[Math.round(Math.random() * replies.length)];
   };
@@ -267,8 +262,6 @@ class App extends React.Component {
       }
     };
 
-    let msgIndex = 0;
-
     if (this.state.gameState === GameState.Home) {
       return (
         <div className="App">
@@ -297,37 +290,17 @@ class App extends React.Component {
         <div className="App">
           <img src={logo} className="App-logo" alt="logo" />
           Howdy there {this.state.author}!
-          <ScrollToBottom className="App-chatbox">
-            {this.state.messages.map((msg: ChatMessage) => {
-              msgIndex++;
-              return (
-                <div key={msgIndex} className="App-chatbox-elem">
-                  <p>{msg.author}</p>
-                  <p>{msg.message}</p>
-                </div>
-              );
-            })}
-          </ScrollToBottom>
+          <Chatbox messages={this.state.messages} />
         </div>
       );
     } else if (this.state.gameState === GameState.SubmitAnswers) {
       return (
         <div className="App">
-          <ScrollToBottom className="App-chatbox">
-            {this.state.messages.map((msg: ChatMessage) => {
-              msgIndex++;
-              return (
-                <div key={msgIndex} className="App-chatbox-elem">
-                  <p>{msg.author}</p>
-                  <p>{msg.message}</p>
-                </div>
-              );
-            })}
-          </ScrollToBottom>
           {this.state.submittedAnswer ? (
             <>
               Thanks for your submission! Waiting until everybody has submitted
               and the Director moves onto the next section
+              <Chatbox messages={this.state.messages} />
             </>
           ) : (
             <>
@@ -408,34 +381,14 @@ class App extends React.Component {
               This is your truth and lies! I wonder what the others think about
               you...
             </div>
-            <ScrollToBottom className="App-chatbox">
-              {this.state.messages.map((msg: ChatMessage) => {
-                msgIndex++;
-                return (
-                  <div key={msgIndex} className="App-chatbox-elem">
-                    <p>{msg.author}</p>
-                    <p>{msg.message}</p>
-                  </div>
-                );
-              })}
-            </ScrollToBottom>
+            <Chatbox messages={this.state.messages} />
           </div>
         );
     } else if (this.state.gameState === GameState.AfterGuess) {
       return (
         <div className="App">
           {this.randomMessage()}
-          <ScrollToBottom className="App-chatbox">
-            {this.state.messages.map((msg: ChatMessage) => {
-              msgIndex++;
-              return (
-                <div key={msgIndex} className="App-chatbox-elem">
-                  <p>{msg.author}</p>
-                  <p>{msg.message}</p>
-                </div>
-              );
-            })}
-          </ScrollToBottom>
+          <Chatbox messages={this.state.messages} />
         </div>
       );
     } else if (this.state.gameState === GameState.Results) {

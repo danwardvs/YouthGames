@@ -2,7 +2,8 @@ export interface ChatMessage {
   author: string;
   message: string;
 }
-interface User {
+
+export interface User {
   author: string;
   score: number;
   correct: string;
