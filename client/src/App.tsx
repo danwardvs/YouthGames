@@ -5,6 +5,8 @@ import { ChatContext } from "./ChatContext";
 import { Chatbox } from "./Chatbox";
 import { Home } from "./pages/Home";
 import logo from "./logan.png";
+import { EnteredName } from "./pages/EnteredName";
+import { SubmitAnswers } from "./pages/SubmitAnswers";
 
 enum GameState {
   Home = 0,
@@ -273,56 +275,20 @@ class App extends React.Component {
       );
     } else if (this.state.gameState === GameState.EnteredName) {
       return (
-        <div className="App">
-          <img src={logo} className="App-logo" alt="logo" />
-          Howdy there {this.state.author}!
-          <Chatbox messages={this.state.messages} />
-        </div>
+        <EnteredName
+          messages={this.state.messages}
+          author={this.state.author}
+        />
       );
     } else if (this.state.gameState === GameState.SubmitAnswers) {
       return (
-        <div className="App">
-          {this.state.submittedAnswer ? (
-            <>
-              Thanks for your submission! Waiting until everybody has submitted
-              and the Director moves onto the next section
-              <Chatbox messages={this.state.messages} />
-            </>
-          ) : (
-            <>
-              <input
-                className="App-Textarea"
-                placeholder="Type your truth #1 here..."
-                onChange={(event) => updateAnswers(event.target.value, 0)}
-                value={this.state.answers[0]}
-              />
-              <input
-                className="App-Textarea"
-                placeholder="Type your truth #2 here..."
-                onChange={(event) => updateAnswers(event.target.value, 1)}
-                value={this.state.answers[1]}
-              />
-              <input
-                className="App-Textarea"
-                placeholder="Type your lie here..."
-                onChange={(event) => updateAnswers(event.target.value, 2)}
-                value={this.state.answers[2]}
-              />
-              <p>
-                <div
-                  className="App-button"
-                  onClick={() => {
-                    handleGameSubmit();
-                  }}
-                >
-                  <button>Submit Answers</button>
-                </div>
-                Note: Answers must be non-blank and must not be equal to each
-                other.
-              </p>
-            </>
-          )}
-        </div>
+        <SubmitAnswers
+          answers={this.state.answers}
+          messages={this.state.messages}
+          submittedAnswer={this.state.submittedAnswer}
+          updateAnswers={updateAnswers}
+          handleGameSubmit={handleGameSubmit}
+        />
       );
     } else if (this.state.gameState === GameState.IntroGuess) {
       return (
