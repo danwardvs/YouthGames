@@ -1,9 +1,10 @@
 import React from "react";
-import logo from "./logan.png";
 import "./App.css";
 import { ChatMessage, ChatState, User } from "./types";
 import { ChatContext } from "./ChatContext";
 import { Chatbox } from "./Chatbox";
+import { Home } from "./pages/Home";
+import logo from "./logan.png";
 
 enum GameState {
   Home = 0,
@@ -264,26 +265,11 @@ class App extends React.Component {
 
     if (this.state.gameState === GameState.Home) {
       return (
-        <div className="App">
-          <img src={logo} className="App-logo" alt="logo" />
-          Welcome to Danny's (probably broken) online youth games.
-          <input
-            className="App-Textarea"
-            placeholder="Please enter your (real) name!"
-            onChange={updateInput}
-            value={this.state.nameInput}
-          />
-          <p>
-            <div
-              className="App-button"
-              onClick={() => {
-                handleName();
-              }}
-            >
-              <button>Enter Name</button>
-            </div>
-          </p>
-        </div>
+        <Home
+          handleName={handleName}
+          nameInput={this.state.nameInput}
+          updateInput={updateInput}
+        />
       );
     } else if (this.state.gameState === GameState.EnteredName) {
       return (
