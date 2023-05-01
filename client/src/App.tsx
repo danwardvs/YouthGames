@@ -7,6 +7,8 @@ import { Home } from "./pages/Home";
 import logo from "./logan.png";
 import { EnteredName } from "./pages/EnteredName";
 import { SubmitAnswers } from "./pages/SubmitAnswers";
+import { IntroGuess } from "./pages/IntroGuess";
+import { SubmitGuess } from "./pages/SubmitGuess";
 
 enum GameState {
   Home = 0,
@@ -282,51 +284,17 @@ class App extends React.Component {
         />
       );
     } else if (this.state.gameState === GameState.IntroGuess) {
-      return (
-        <div className="App">
-          <img src={logo} className="App-logo" alt="logo" />
-          Get ready to guess the answer that you think is a lie.
-        </div>
-      );
+      return <IntroGuess />;
     } else if (this.state.gameState === GameState.SubmitGuess) {
-      if (this.state.answerAuthor !== this.state.author)
-        return (
-          <div className="App">
-            These two truths and one lie are brought to you by:{" "}
-            {this.state.answerAuthor}
-            <p>
-              <div
-                className="App-button"
-                onClick={() => handleChoiceSubmit(this.state.answers[0])}
-              >
-                <button>{this.state.answers[0]}</button>
-              </div>
-              <div
-                className="App-button"
-                onClick={() => handleChoiceSubmit(this.state.answers[1])}
-              >
-                <button>{this.state.answers[1]}</button>
-              </div>
-
-              <div
-                className="App-button"
-                onClick={() => handleChoiceSubmit(this.state.answers[2])}
-              >
-                <button>{this.state.answers[2]}</button>
-              </div>
-            </p>
-          </div>
-        );
-      else
-        return (
-          <div className="App">
-            <div className="headline">
-              This is your truth and lies! I wonder what the others think about
-              you...
-            </div>
-            <Chatbox messages={this.state.messages} />
-          </div>
-        );
+      return (
+        <SubmitGuess
+          answerAuthor={this.state.answerAuthor}
+          author={this.state.author}
+          answers={this.state.answers}
+          messages={this.state.messages}
+          handleChoiceSubmit={handleChoiceSubmit}
+        />
+      );
     } else if (this.state.gameState === GameState.AfterGuess) {
       return (
         <div className="App">
