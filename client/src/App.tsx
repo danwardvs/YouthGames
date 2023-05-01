@@ -178,56 +178,56 @@ class App extends React.Component {
         this.setState({ author: this.state.nameInput });
       }
     };
-
-    if (this.state.gameState === GameState.Home) {
-      return (
-        <Home
-          handleName={handleName}
-          nameInput={this.state.nameInput}
-          updateInput={updateInput}
-        />
-      );
-    } else if (this.state.gameState === GameState.EnteredName) {
-      return (
-        <EnteredName
-          messages={this.state.messages}
-          author={this.state.author}
-        />
-      );
-    } else if (this.state.gameState === GameState.SubmitAnswers) {
-      return (
-        <SubmitAnswers
-          answers={this.state.answers}
-          messages={this.state.messages}
-          submittedAnswer={this.state.submittedAnswer}
-          updateAnswers={updateAnswers}
-          handleGameSubmit={handleGameSubmit}
-        />
-      );
-    } else if (this.state.gameState === GameState.IntroGuess) {
-      return <IntroGuess />;
-    } else if (this.state.gameState === GameState.SubmitGuess) {
-      return (
-        <SubmitGuess
-          answerAuthor={this.state.answerAuthor}
-          author={this.state.author}
-          answers={this.state.answers}
-          messages={this.state.messages}
-          handleChoiceSubmit={handleChoiceSubmit}
-        />
-      );
-    } else if (this.state.gameState === GameState.AfterGuess) {
-      return <AfterGuess messages={this.state.messages} />;
-    } else if (this.state.gameState === GameState.Results) {
-      return (
-        <Results
-          author={this.state.author}
-          correctAnswer={this.state.correctAnswer}
-          results={this.state.results}
-        />
-      );
-    } else if (this.state.gameState === GameState.Final) {
-      return <Final results={this.state.results} />;
+    switch (this.state.gameState) {
+      case GameState.Home:
+        return (
+          <Home
+            handleName={handleName}
+            nameInput={this.state.nameInput}
+            updateInput={updateInput}
+          />
+        );
+      case GameState.EnteredName:
+        return (
+          <EnteredName
+            messages={this.state.messages}
+            author={this.state.author}
+          />
+        );
+      case GameState.SubmitAnswers:
+        return (
+          <SubmitAnswers
+            answers={this.state.answers}
+            messages={this.state.messages}
+            submittedAnswer={this.state.submittedAnswer}
+            updateAnswers={updateAnswers}
+            handleGameSubmit={handleGameSubmit}
+          />
+        );
+      case GameState.IntroGuess:
+        return <IntroGuess />;
+      case GameState.SubmitGuess:
+        return (
+          <SubmitGuess
+            answerAuthor={this.state.answerAuthor}
+            author={this.state.author}
+            answers={this.state.answers}
+            messages={this.state.messages}
+            handleChoiceSubmit={handleChoiceSubmit}
+          />
+        );
+      case GameState.AfterGuess:
+        return <AfterGuess messages={this.state.messages} />;
+      case GameState.Results:
+        return (
+          <Results
+            author={this.state.author}
+            correctAnswer={this.state.correctAnswer}
+            results={this.state.results}
+          />
+        );
+      case GameState.Final:
+        return <Final results={this.state.results} />;
     }
   }
 }
