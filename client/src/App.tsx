@@ -221,29 +221,20 @@ class App extends React.Component {
     };
 
     const handleGameSubmit = (): void => {
-      if (
-        this.state.answers[0] !== "" &&
-        this.state.answers[1] !== "" &&
-        this.state.answers[2] !== "" &&
-        this.state.answers[1] !== this.state.answers[2] &&
-        this.state.answers[1] !== this.state.answers[3] &&
-        this.state.answers[2] !== this.state.answers[3]
-      ) {
-        this.context.send({
-          message:
-            "**" +
-            this.state.answers[0] +
-            "|" +
-            this.state.answers[1] +
-            "|" +
-            this.state.answers[2],
-          author: this.state.author
-        });
-        this.setState({
-          answers: ["", "", ""],
-          submittedAnswer: true
-        });
-      }
+      const answers = [
+        this.state.answers[0].trim(),
+        this.state.answers[1].trim(),
+        this.state.answers[2].trim()
+      ];
+
+      this.context.send({
+        message: "**" + answers[0] + "|" + answers[1] + "|" + answers[2],
+        author: this.state.author
+      });
+      this.setState({
+        answers: ["", "", ""],
+        submittedAnswer: true
+      });
     };
     const handleChoiceSubmit = (choice: string) => {
       this.setState({ gameState: 5 });

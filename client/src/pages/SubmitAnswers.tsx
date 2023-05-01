@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Chatbox } from "../Chatbox";
 import { ChatMessage } from "../types";
 
@@ -15,6 +15,27 @@ export const SubmitAnswers: React.FC<{
   updateAnswers,
   handleGameSubmit
 }) => {
+  const [error, setError] = useState("");
+
+  const handleValidateGameSubmit = () => {
+    const trim = [answers[0].trim(), answers[1].trim(), answers[2].trim()];
+    if (trim[0] === "" || trim[1] === "" || trim[2] === "") {
+      setError("No blank answers are permitted.");
+      return;
+    }
+    if (trim[0] === trim[1] || trim[1] === trim[2] || trim[2] === trim[0]) {
+      setError("Answers must be unique.");
+      return;
+    }
+    handleGameSubmit();
+    setError("");
+  };
+
+  const handleUpdateAnswers = (answer: string, index: number) => {
+    setError("");
+    updateAnswers(answer, index);
+  };
+
   return (
     <div className="App">
       {submittedAnswer ? (
@@ -25,33 +46,40 @@ export const SubmitAnswers: React.FC<{
         </>
       ) : (
         <>
+          Two truths:
           <input
             className="App-Textarea"
             placeholder="Type your truth #1 here..."
-            onChange={(event) => updateAnswers(event.target.value, 0)}
+            onChange={(event) => handleUpdateAnswers(event.target.value, 0)}
             value={answers[0]}
           />
           <input
             className="App-Textarea"
             placeholder="Type your truth #2 here..."
-            onChange={(event) => updateAnswers(event.target.value, 1)}
+            onChange={(event) => handleUpdateAnswers(event.target.value, 1)}
             value={answers[1]}
           />
+          Lie:
           <input
             className="App-Textarea"
             placeholder="Type your lie here..."
-            onChange={(event) => updateAnswers(event.target.value, 2)}
+            onChange={(event) => handleUpdateAnswers(event.target.value, 2)}
             value={answers[2]}
           />
           <p>
             <div
               className="App-button"
               onClick={() => {
-                handleGameSubmit();
+                handleValidateGameSubmit();
               }}
             >
               <button>Submit Answers</button>
             </div>
+            {error && (
+              <div className="App-button" style={{ color: "red" }}>
+                {error}
+              </div>
+            )}
             Note: Answers must be non-blank and must not be equal to each other.
           </p>
         </>
