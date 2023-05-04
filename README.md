@@ -1,6 +1,9 @@
 # Online Multiplayer Two Truths and Lie game
-### with Express, React, Socket.io and RxJS.
 
-### Based on this chat app https://github.com/rossbulat/ts-live-chat-demo
+Using React, SocketIO, Express, and Node.js.
+
+Split into frontend and client.
+
+Forked from https://github.com/rossbulat/ts-live-chat-demo
 
 
